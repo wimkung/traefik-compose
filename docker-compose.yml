@@ -1,0 +1,57 @@
+version: "3.3"
+
+services:
+
+  traefik:
+    image: "traefik:v2.0.1"
+    container_name: "traefik"
+    command:
+#      - "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - 80:80
+      - 8080:8080
+    env_file:
+      - .env
+    labels:
+      - traefik.enable=true
+      - traefik.http.middlewares.web-compress.compress=true
+      - traefik.http.middlewares.web-ratelimit.ratelimit.average=600
+      - traefik.http.middlewares.api-ratelimit.ratelimit.average=100
+      - traefik.http.middlewares.basic-auth.basicauth.users=${BASIC_AUTH}
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  frontend:
+    image: "elecweb/react-with-docker"
+    container_name: "frontend"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.frontend.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.frontend.entrypoints=web
+      - traefik.http.routers.frontend.middlewares=web-compress@docker,web-ratelimit@docker
+      - traefik.http.services.frontend-service.loadbalancer.server.port=3000
+
+
+  backend:
+    image: "wimkung/hapi-with-docker"
+    container_name: "backend"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.backend.rule=Host(`api.${DOMAIN}`)
+      - traefik.http.routers.backend.entrypoints=web
+      - traefik.http.routers.backend.middlewares=api-ratelimit@docker
+      - traefik.http.services.backend-service.loadbalancer.server.port=8000
+
+  dashboard:
+    image: "elecweb/react-with-docker"
+    container_name: "dashboard"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.dashboard.rule=Host(`dashboard.${DOMAIN}`)
+      - traefik.http.routers.dashboard.entrypoints=web
+      - traefik.http.routers.dashboard.middlewares=basic-auth@docker,web-compress@docker,web-ratelimit@docker
+      - traefik.http.services.dashboard-service.loadbalancer.server.port=3000
