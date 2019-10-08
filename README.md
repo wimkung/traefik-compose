@@ -33,3 +33,5 @@ Frontend : http://localhost
 Backend : http://api.localhost
 
 Dashboard (Basic-auth) : http://dashboard.localhost
+
+Traefik Dashboard : http://localhost:8080
