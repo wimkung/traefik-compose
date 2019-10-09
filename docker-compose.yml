@@ -17,8 +17,6 @@ services:
       - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
       - --certificatesresolvers.letsencrypt.acme.email=${SSL_MAIL}
       - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
-      - --certificatesresolvers.letsencrypt.acme.dnsChallenge.provider=cloudflare
-      - --certificatesresolvers.letsencrypt.acme.dnschallenge.delayBeforeCheck=0
     ports:
       - 443:443
       - 8080:8080
