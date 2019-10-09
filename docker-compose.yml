@@ -43,7 +43,6 @@ services:
       - traefik.http.routers.frontend-secured.middlewares=web-compress@docker,web-ratelimit@docker
       - traefik.http.routers.frontend-secured.entrypoints=websecure
       - traefik.http.routers.frontend-secured.rule=Host(`${DOMAIN}`)
-      - traefik.http.routers.frontend-secured.entrypoints=websecure
       - traefik.http.routers.frontend-secured.service=frontend-service
       - traefik.http.routers.frontend-secured.tls.certresolver=letsencrypt
       - traefik.http.services.frontend-service.loadbalancer.server.port=3000
