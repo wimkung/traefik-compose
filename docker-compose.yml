@@ -14,6 +14,12 @@ services:
       - --accesslog=true
       - --accesslog.bufferingsize=100
       - --accesslog.filePath=/var/log/access.log
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.sslchallenge.acme.tlschallenge=true
+      - --certificatesresolvers.sslchallenge.acme.email=postmaster@mydomain.com
+      - --certificatesresolvers.sslchallenge.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.letsencrypt.acme.dnsChallenge.provider=cloudflare
+      - --certificatesresolvers.letsencrypt.acme.dnschallenge.delayBeforeCheck=0
     ports:
       - 80:80
       - 8080:8080
@@ -26,8 +32,9 @@ services:
       - traefik.http.middlewares.api-ratelimit.ratelimit.average=100
       - traefik.http.middlewares.basic-auth.basicauth.users=${BASIC_AUTH}
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./log:/var/log
+      - ./letsencrypt:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
 
   frontend:
     image: "elecweb/react-with-docker"
@@ -35,9 +42,10 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.frontend.rule=Host(`${DOMAIN}`)
-      - traefik.http.routers.frontend.entrypoints=web
+      - traefik.http.routers.frontend.entrypoints=web,websecure
       - traefik.http.routers.frontend.middlewares=web-compress@docker,web-ratelimit@docker
       - traefik.http.services.frontend-service.loadbalancer.server.port=3000
+      - traefik.http.routers.frontend.tls.certresolver=sslchallenge
 
 
   backend:
@@ -46,9 +54,10 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.backend.rule=Host(`api.${DOMAIN}`)
-      - traefik.http.routers.backend.entrypoints=web
+      - traefik.http.routers.backend.entrypoints=web,websecure
       - traefik.http.routers.backend.middlewares=api-ratelimit@docker
       - traefik.http.services.backend-service.loadbalancer.server.port=8000
+      - traefik.http.routers.frontend.tls.certresolver=sslchallenge
 
   dashboard:
     image: "elecweb/react-with-docker"
@@ -56,6 +65,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.dashboard.rule=Host(`dashboard.${DOMAIN}`)
-      - traefik.http.routers.dashboard.entrypoints=web
+      - traefik.http.routers.dashboard.entrypoints=web,websecure
       - traefik.http.routers.dashboard.middlewares=basic-auth@docker,web-compress@docker,web-ratelimit@docker
       - traefik.http.services.dashboard-service.loadbalancer.server.port=3000
+      - traefik.http.routers.frontend.tls.certresolver=sslchallenge
