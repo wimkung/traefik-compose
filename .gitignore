@@ -4,3 +4,7 @@
 .DS_Store
 
 .env
+
+log/access.log
+
+log/traefik.log
