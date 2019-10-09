@@ -1,15 +1,19 @@
 # traefik-compose
+
+![Image 1](traefik.png)
+
 This repo is simple traefik in docker.
 
 ## Features
-   - [x] Domain mapping
-   - [x] BasicAuth
-   - [x] Compress
-   - [x] RateLimit
+
+- [x] Domain mapping
+- [x] BasicAuth
+- [x] Compress
+- [x] RateLimit
 
 ## Usage
 
-Create `.env` file from `.env.example` 
+Create `.env` file from `.env.example`
 
 ```sh
     cp .env.example .env
@@ -17,6 +21,7 @@ Create `.env` file from `.env.example`
 
 Generate Basic authentication
 `Note: all dollar signs in the hash need to be doubled for escaping.`
+
 ```sh
     echo $(htpasswd -nb user password) | sed -e s/\\$/\\$\\$/g
 ```
@@ -28,6 +33,7 @@ Run
 ```
 
 ## Endpoint
+
 Frontend : http://localhost
 
 Backend : http://api.localhost
