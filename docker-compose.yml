@@ -16,7 +16,7 @@ services:
       - --accesslog.filePath=/var/log/access.log
       - --entrypoints.websecure.address=:443
       - --certificatesresolvers.sslchallenge.acme.tlschallenge=true
-      - --certificatesresolvers.sslchallenge.acme.email=postmaster@mydomain.com
+      - --certificatesresolvers.sslchallenge.acme.email=${SSL_MAIL}
       - --certificatesresolvers.sslchallenge.acme.storage=/letsencrypt/acme.json
       - --certificatesresolvers.letsencrypt.acme.dnsChallenge.provider=cloudflare
       - --certificatesresolvers.letsencrypt.acme.dnschallenge.delayBeforeCheck=0
