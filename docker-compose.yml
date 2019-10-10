@@ -45,16 +45,14 @@ services:
     container_name: "frontend"
     labels:
       - traefik.enable=true
-      - traefik.http.routers.frontend.rule=Host(`${DOMAIN}`) || HostRegexp(`{subdomain:www|en|es|fr|hi|ja|ko|th|zh}.${DOMAIN}`)
+      - traefik.http.routers.frontend.rule=Host(`${DOMAIN}`)
       - traefik.http.routers.frontend.entrypoints=web
       - traefik.http.routers.frontend.middlewares=redirecthttps
       - traefik.http.routers.frontend-secured.middlewares=web-compress@docker,web-ratelimit@docker
       - traefik.http.routers.frontend-secured.entrypoints=websecure
-      - traefik.http.routers.frontend-secured.rule=Host(`${DOMAIN}`) || HostRegexp(`{subdomain:www|en|es|fr|hi|ja|ko|th|zh}.${DOMAIN}`)
+      - traefik.http.routers.frontend-secured.rule=Host(`${DOMAIN}`)
       - traefik.http.routers.frontend-secured.service=frontend-service
       - traefik.http.routers.frontend-secured.tls.certresolver=letsencrypt
-      - traefik.http.routers.frontend-secured.tls.domains[0].main=*.${DOMAIN}
-      - traefik.http.routers.frontend-secured.tls.domains[0].sans=${DOMAIN}
       - traefik.http.services.frontend-service.loadbalancer.server.port=3000
 
   backend:
