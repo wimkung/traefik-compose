@@ -29,7 +29,7 @@ services:
       - traefik.http.routers.traefik-secured.entrypoints=websecure
       - traefik.http.routers.traefik-secured.tls.certresolver=letsencrypt
       - traefik.http.routers.traefik-secured.service=api@internal
-      - traefik.http.routers.traefik.middlewares=basic-auth@docker
+      - traefik.http.routers.traefik-secured.middlewares=basic-auth@docker
       - traefik.http.middlewares.web-compress.compress=true
       - traefik.http.middlewares.web-ratelimit.ratelimit.average=600
       - traefik.http.middlewares.api-ratelimit.ratelimit.average=100
@@ -45,12 +45,12 @@ services:
     container_name: "frontend"
     labels:
       - traefik.enable=true
-      - traefik.http.routers.frontend.rule=HostRegexp(`{subdomain:www|en|es|fr|hi|ja|ko|th|zh}.${DOMAIN}`)
+      - traefik.http.routers.frontend.rule=Host(`${DOMAIN}`) || HostRegexp(`{subdomain:www|en|es|fr|hi|ja|ko|th|zh}.${DOMAIN}`)
       - traefik.http.routers.frontend.entrypoints=web
       - traefik.http.routers.frontend.middlewares=redirecthttps
       - traefik.http.routers.frontend-secured.middlewares=web-compress@docker,web-ratelimit@docker
       - traefik.http.routers.frontend-secured.entrypoints=websecure
-      - traefik.http.routers.frontend-secured.rule=HostRegexp(`{subdomain:www|en|es|fr|hi|ja|ko|th|zh}.${DOMAIN}`)
+      - traefik.http.routers.frontend-secured.rule=Host(`${DOMAIN}`) || HostRegexp(`{subdomain:www|en|es|fr|hi|ja|ko|th|zh}.${DOMAIN}`)
       - traefik.http.routers.frontend-secured.service=frontend-service
       - traefik.http.routers.frontend-secured.tls.certresolver=letsencrypt
       - traefik.http.services.frontend-service.loadbalancer.server.port=3000
