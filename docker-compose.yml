@@ -13,21 +13,28 @@ services:
       - --accesslog=true
       - --accesslog.bufferingsize=100
       - --accesslog.filePath=/var/log/access.log
+      - --entryPoints.web.address=:80
       - --entrypoints.websecure.address=:443
       - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
       - --certificatesresolvers.letsencrypt.acme.email=${SSL_MAIL}
       - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
     ports:
       - 443:443
-      - 8080:8080
+      - 80:80
     env_file:
       - .env
     labels:
       - traefik.enable=true
+      - traefik.http.routers.traefik-secured.rule=Host(`dashboard.${DOMAIN}`)
+      - traefik.http.routers.traefik-secured.entrypoints=websecure
+      - traefik.http.routers.traefik-secured.tls.certresolver=letsencrypt
+      - traefik.http.routers.traefik-secured.service=api@internal
+      - traefik.http.routers.traefik.middlewares=basic-auth@docker
       - traefik.http.middlewares.web-compress.compress=true
       - traefik.http.middlewares.web-ratelimit.ratelimit.average=600
       - traefik.http.middlewares.api-ratelimit.ratelimit.average=100
       - traefik.http.middlewares.basic-auth.basicauth.users=${BASIC_AUTH}
+      - traefik.http.middlewares.redirecthttps.redirectscheme.scheme=https
     volumes:
       - ./log:/var/log
       - ./letsencrypt:/letsencrypt
@@ -38,9 +45,27 @@ services:
     container_name: "frontend"
     labels:
       - traefik.enable=true
+      - traefik.http.routers.frontend.rule=HostRegexp(`{subdomain:www|en|es|fr|hi|ja|ko|th|zh}.${DOMAIN}`)
+      - traefik.http.routers.frontend.entrypoints=web
+      - traefik.http.routers.frontend.middlewares=redirecthttps
       - traefik.http.routers.frontend-secured.middlewares=web-compress@docker,web-ratelimit@docker
       - traefik.http.routers.frontend-secured.entrypoints=websecure
-      - traefik.http.routers.frontend-secured.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.frontend-secured.rule=HostRegexp(`{subdomain:www|en|es|fr|hi|ja|ko|th|zh}.${DOMAIN}`)
       - traefik.http.routers.frontend-secured.service=frontend-service
       - traefik.http.routers.frontend-secured.tls.certresolver=letsencrypt
       - traefik.http.services.frontend-service.loadbalancer.server.port=3000
+
+  backend:
+    image: "wimkung/hapi-with-docker"
+    container_name: "backend"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.backend.rule=Host(`api.${DOMAIN}`)
+      - traefik.http.routers.backend.entrypoints=web
+      - traefik.http.routers.backend.middlewares=redirecthttps
+      - traefik.http.routers.backend-secured.middlewares=api-ratelimit@docker
+      - traefik.http.routers.backend-secured.entrypoints=websecure
+      - traefik.http.routers.backend-secured.rule=Host(`api.${DOMAIN}`)
+      - traefik.http.routers.backend-secured.service=backend-service
+      - traefik.http.routers.backend-secured.tls.certresolver=letsencrypt
+      - traefik.http.services.backend-service.loadbalancer.server.port=8000
