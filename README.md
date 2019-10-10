@@ -10,6 +10,8 @@ This repo is simple traefik in docker.
 - [x] BasicAuth
 - [x] Compress
 - [x] RateLimit
+- [x] Redirect to https
+- [x] Let's encrypt (SSL)
 
 ## Usage
 
@@ -39,5 +41,3 @@ Frontend : http://localhost
 Backend : http://api.localhost
 
 Dashboard (Basic-auth) : http://dashboard.localhost
-
-Traefik Dashboard : http://localhost:8080
